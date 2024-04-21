@@ -1,0 +1,80 @@
+# Azure CLI and PowerShell Environment Setup for Multipass VM
+#
+# Description:
+# This configuration creates a Multipass VM equipped with Azure CLI and PowerShell
+# on Ubuntu 22.04 LTS. It is designed for developers and sysadmins who require
+# a versatile toolset for managing Azure resources and automating tasks across
+# cloud environments. By incorporating both Azure CLI and PowerShell, users gain
+# access to a broad range of commands and scripts for comprehensive cloud management.
+# This setup is ideal for cross-platform scripting and automation workflows.
+#
+# Version: 0.1
+#
+# Compatibility:
+# - ARM64
+# - x86_64
+#
+instances:
+  azure-cli-powershell:
+    image: 22.04
+    # Resource allocation to ensure smooth operation of Azure CLI and PowerShell:
+    limits:
+      min-cpu: 1 # Minimum CPU allocated
+      min-mem: 2G # Minimum memory allocated (2GB recommended for adequate performance)
+      min-disk: 10G # Disk space increased to 10G to accommodate the software installations and user data
+    timeout: 1800 # Provisioning timeout in seconds
+    cloud-init:
+      vendor-data: |
+
+        package_upgrade: true # Ensures all packages are up to date on first boot
+
+        # Essential packages for the environment setup:
+        packages:
+        - curl # For downloading software like Azure CLI
+        - lsb-release # Provides LSB (Linux Standard Base) versioning
+        - apt-transport-https # Allows the use of 'https' for repositories in apt
+        - ca-certificates # Ensures SSL-based applications can check for the authenticity of SSL connections
+        - software-properties-common # Provides an abstraction of the used apt repositories
+        - python3-pip # Package manager for Python, useful for any Python-based tools or scripts
+        - jq # Lightweight and flexible command-line JSON processor
+        - gnupg # GNU Privacy Guard, required for adding the PowerShell repository securely
+
+        # Commands to run for setting up the environment:
+        runcmd:
+        # Install Azure CLI:
+        - curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+        
+        # PowerShell installation steps:
+        - sudo apt-get update
+        - sudo apt-get install -y wget apt-transport-https software-properties-common
+        - wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb"
+        - sudo dpkg -i packages-microsoft-prod.deb
+        - sudo apt-get update
+        - sudo apt-get install -y powershell
+
+        # Configuration files and command aliases:
+        write_files:
+        - content: |
+            # Enabling Azure CLI autocompletion to improve user experience:
+            echo 'source /etc/bash_completion.d/azure-cli' >> ~/.bashrc
+            # Setting up PowerShell profile for improved scripting interaction:
+            echo 'Import-Module PSReadLine' >> ~/.config/powershell/profile.ps1
+            echo 'Set-PSReadLineOption -EditMode Emacs' >> ~/.config/powershell/profile.ps1
+            echo 'Set-PSReadLineOption -BellStyle None' >> ~/.config/powershell/profile.ps1
+
+          path: /home/ubuntu/.bashrc
+          append: true
+          defer: true # Deferred execution ensures this runs after user account setup
+
+        # Notification to indicate completion:
+        final_message: "The Azure CLI and PowerShell environment is ready, after $UPTIME seconds."
+
+# Health checks to ensure critical components are properly installed:
+health-check: |
+  set -e
+  # Verifying Azure CLI installation:
+  az --version
+  # Verifying jq installation:
+  jq --version
+  # Verifying PowerShell installation:
+  pwsh -v
