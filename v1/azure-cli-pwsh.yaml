@@ -24,47 +24,48 @@ instances:
     timeout: 1800
     cloud-init:
       vendor-data: |
-        package_upgrade: true # Ensures all packages are up to date on first boot
-        # Essential packages for the environment setup:
+        package_update: true
+        package_upgrade: true
+        package_reboot_if_required: true        
 
         packages:
-        - curl # For downloading software like Azure CLI
-        - lsb-release # Provides LSB (Linux Standard Base) versioning
-        - apt-transport-https # Allows the use of 'https' for repositories in apt
-        - ca-certificates # Ensures SSL-based applications can check for the authenticity of SSL connections
-        - software-properties-common # Provides an abstraction of the used apt repositories
-        - python3-pip # Package manager for Python, useful for any Python-based tools or scripts
-        - jq # Lightweight and flexible command-line JSON processor
-        - gnupg # GNU Privacy Guard, required for adding the PowerShell repository securely
-
-        # Commands to run for setting up the environment:
-        runcmd:
-        # Install Azure CLI:
+        - curl
+        - lsb-release
+        - apt-transport-https
+        - ca-certificates
+        - software-properties-common
+        - python3-pip
+        - jq
+        - gnupg
+        
+        runcmd:        
         - curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
         
-        # PowerShell installation steps:
-        - sudo apt-get update
-        - sudo apt-get install -y wget apt-transport-https software-properties-common
-        - wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb"
-        - sudo dpkg -i packages-microsoft-prod.deb
-        - sudo apt-get update
-        - sudo apt-get install -y powershell
+        - |
+          # PowerShell installation steps:
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https software-properties-common
+          wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb"
+          sudo dpkg -i packages-microsoft-prod.deb
+          sudo apt-get update
+          sudo apt-get install -y powershell
 
         # Configuration files and command aliases:
         write_files:
-        - content: |
-            # Enabling Azure CLI autocompletion to improve user experience:
-            echo 'source /etc/bash_completion.d/azure-cli' >> ~/.bashrc
-            # Setting up PowerShell profile for improved scripting interaction:
-            echo 'Import-Module PSReadLine' >> ~/.config/powershell/profile.ps1
-            echo 'Set-PSReadLineOption -EditMode Emacs' >> ~/.config/powershell/profile.ps1
-            echo 'Set-PSReadLineOption -BellStyle None' >> ~/.config/powershell/profile.ps1
 
+        - content: |            
+            source /etc/bash_completion.d/azure-cli
+            
           path: /home/ubuntu/.bashrc
           append: true
-          defer: true # Deferred execution ensures this runs after user account setup
+          defer: true
 
-        # Notification to indicate completion:
+        - content: |
+            Import-Module PSReadLine
+            Set-PSReadLineOption -EditMode Emacs
+            Set-PSReadLineOption -BellStyle None
+          path: /home/ubuntu/.config/powershell/profile.ps1
+          
         final_message: "The Azure CLI and PowerShell environment is ready, after $UPTIME seconds."
 
 health-check: |
