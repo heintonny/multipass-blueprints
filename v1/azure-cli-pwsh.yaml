@@ -17,18 +17,16 @@
 instances:
   azure-cli-pwsh:
     image: 22.04
-    # Resource allocation to ensure smooth operation of Azure CLI and PowerShell:
     limits:
-      min-cpu: 1 # Minimum CPU allocated
-      min-mem: 2G # Minimum memory allocated (2GB recommended for adequate performance)
-      min-disk: 10G # Disk space increased to 10G to accommodate the software installations and user data
-    timeout: 1800 # Provisioning timeout in seconds
+      min-cpu: 1
+      min-mem: 2G
+      min-disk: 10G
+    timeout: 1800
     cloud-init:
       vendor-data: |
-
         package_upgrade: true # Ensures all packages are up to date on first boot
-
         # Essential packages for the environment setup:
+
         packages:
         - curl # For downloading software like Azure CLI
         - lsb-release # Provides LSB (Linux Standard Base) versioning
