@@ -15,7 +15,7 @@
 # - x86_64
 #
 instances:
-  azure-cli-powershell:
+  azure-cli-pwsh:
     image: 22.04
     # Resource allocation to ensure smooth operation of Azure CLI and PowerShell:
     limits:
