@@ -67,7 +67,6 @@ instances:
         # Notification to indicate completion:
         final_message: "The Azure CLI and PowerShell environment is ready, after $UPTIME seconds."
 
-# Health checks to ensure critical components are properly installed:
 health-check: |
   set -e
   # Verifying Azure CLI installation:
